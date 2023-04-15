@@ -1,122 +1,115 @@
 const User = require('../models/user')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const moment = require('moment')
+const geolib = require('geolib');
 
-// User registation. 
-async function register(req, res) {
-    // check if required attributes are provided
-    const validationResult = validateUserAttributes(req.body);
-    if (!validationResult.valid) {
-        return res.status(400).json({ message: validationResult.errorMessage });
-    }
-
-    // Check if email is already in the database
-    let user = await User.findOne({ email: req.body.email });
-    if (user) {
-        return res.status(400).json({ message: "The email address you have entered is already associated with another account." });
-    }
-
-    // Set optional attributes to null if not provided
-    const optionalAttributes = ['avatar', 'language', 'dob', 'latitude', 'longitude', 'field'];
-    optionalAttributes.forEach(attr => {
-        if (!req.body[attr]) {
-            req.body[attr] = null;
-        }
-    });
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    req.body.password = await bcrypt.hash(req.body.password, salt);
-
-    // Create new user
-    user = new User({
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        avatar: req.body.avatar,
-        gender: req.body.gender,
-        email: req.body.email,
-        password: req.body.password,
-        type: req.body.type,
-        language: req.body.language,
-        dob: req.body.dob,
-        latitude: req.body.latitude,
-        longitude: req.body.longitude,
-        field: req.body.field
-    });
-
-    await user.save();
-
-    // Generate JWT
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1d' });
-
-    // Return user and token
-    res.status(201).json({
-        token: token,
-        message: "success",
-    })
-}
-
-function validateEmail(email) {
-    var re = /\S+@\S+\.\S+/;
-    return re.test(email);
-}
-
-function validateUserAttributes(userAttributes) {
-    const requiredAttributes = [
-        { name: 'first_name', errorMessage: 'Please enter your first name.' },
-        { name: 'last_name', errorMessage: 'Please enter your last name.' },
-        { name: 'email', errorMessage: 'Please enter your email.', validator: validateEmail },
-        { name: 'password', errorMessage: 'Please enter your password.', validator: validatePassword },
-        { name: 'gender', errorMessage: 'Please enter your gender.', enum: ['male', 'female', 'non-binary', 'prefer not to say'] },
-        { name: 'type', errorMessage: 'Please enter your type.' }
-    ];
-
-    for (const attribute of requiredAttributes) {
-        const value = userAttributes[attribute.name];
-        if (!value) {
-            return { valid: false, errorMessage: attribute.errorMessage };
-        }
-
-        if (attribute.validator && !attribute.validator(value)) {
-            return { valid: false, errorMessage: attribute.errorMessage };
-        }
-
-        if (attribute.enum && !attribute.enum.includes(value)) {
-            return { valid: false, errorMessage: attribute.errorMessage };
-        }
-    }
-
-    return { valid: true };
-}
-
-function validatePassword(password) {
-    return password.length >= 8;
-}
-
-// User login
-async function login(req, res) {
-    // Find the user.
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-        return res.status(400).json({ message: "The email address " + req.email + " is not associated with any account. Double-check your email address and try again." });
-    }
-    // validate password
-    const validPassword = await bcrypt.compare(req.body.password, user.password);
-    if (!validPassword) {
-        return res.status(400).json({ message: "Invalid email or password." });
-    }
-    // Generate JWT
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1d' });
-    // Return user and token
+// get the user info
+function getMyInfo(req, res) {
+    const user = req.user
     res.status(200).json({
-        token: token,
-        message: "success",
+        message: "success", 
+        user: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            gender: user.gender,
+            language: user.language,
+            dob: user.dob,
+            type: user.type,
+            status: user.status,
+            field: user.field,
+        }
     })
 }
 
-//export
+// get the user info
+async function getUserInfo(req, res) {
+    const user = await User.findById(req.body.userId) 
+    if (!user) {
+        return res.status(404).json({
+            message: "user not found"
+        })
+    }
+    res.status(200).json({
+        message: "success", 
+        user: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            gender: user.gender,
+            language: user.language,
+            dob: user.dob,
+            type: user.type,
+            status: user.status,
+            field: user.field,
+        }
+    })
+}
+
+// update the user info
+async function updateMyInfo(req, res) {
+    const user = req.user
+    const updatedUser = req.body
+    if (updatedUser.password) {
+        updatedUser.password = await bcrypt.hash(updatedUser.password, 10)
+    }
+    delete updatedUser.email
+    delete updatedUser.sessions
+    for (const key in updatedUser) {
+        user[key] = updatedUser[key]
+    }
+    await user.save()
+    res.status(200).json({
+        message: "success"
+    })
+}
+
+// sort the users by the number of overlapping fields and distance
+async function getUserByFieldandDistance(req, res) {
+    const user = req.user;
+    const userType = user.type === 'client' ? 'volunteer' : 'client';
+    const users = await User.find({ type: userType });
+    const defaultMaxDistance = Number.MAX_VALUE; // Set a default maximum distance
+
+    const usersWithDistanceAndOverlap = users.map((u) => {
+        const overlappingFields = u.field.filter((field) => user.field.includes(field));
+        const distance = (user.latitude !== null && user.longitude !== null && u.latitude !== null && u.longitude !== null)
+            ? geolib.getDistance(
+                { latitude: user.latitude, longitude: user.longitude },
+                { latitude: u.latitude, longitude: u.longitude }
+              )
+            : defaultMaxDistance;
+
+        return {
+            user: u,
+            overlappingFieldsCount: overlappingFields.length,
+            distance: distance,
+        };
+    });
+
+    const sortedUsers = usersWithDistanceAndOverlap
+            .sort((a, b) => {
+                if (a.overlappingFieldsCount !== b.overlappingFieldsCount) {
+                    return b.overlappingFieldsCount - a.overlappingFieldsCount;
+                }
+                return a.distance - b.distance;
+            })
+            .slice(0, 10)
+            .map((u) => ({
+                _id: u.user._id,
+                first_name: u.user.first_name,
+                last_name: u.user.last_name,
+                avatar: u.user.avatar,
+                overlapped_fields_number: u.overlappingFieldsCount,
+                distance: u.distance === defaultMaxDistance ? "Not available" : u.distance
+            }));
+
+    res.json(sortedUsers);
+}
+
+
+//export 
 module.exports = {
-    register,
-    login
+    getMyInfo,
+    getUserInfo,
+    updateMyInfo,
+    getUserByFieldandDistance
 }

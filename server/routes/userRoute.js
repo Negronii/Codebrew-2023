@@ -1,10 +1,10 @@
-const userRouter = require('express').Router();
-const userController = require("../controllers/userController");
+const userRoute = require('express').Router();
+const userController = require('../controllers/userController');
 
-// Post a new user
-userRouter.post("/register", userController.register);
-// Login a user
-userRouter.post("/login", userController.login);
+userRoute.post('/myInfo', userController.getMyInfo);
+userRoute.post('/byId', userController.getUserInfo);
+userRoute.post('/updateMyInfo', userController.updateMyInfo);
+userRoute.post('/getUserByFieldandDistance', userController.getUserByFieldandDistance);
 
 //export
-module.exports = userRouter;
+module.exports = userRoute;

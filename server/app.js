@@ -16,11 +16,14 @@ const xss = require('xss-clean');
 const rateLimiter = require('express-rate-limit');
 
 // Routes
-const userRouter = require("./routes/userRoute");
+const userRouter = require("./routes/authRoute");
+const messageRouter = require("./routes/messageRoute");
+const userRoute = require("./routes/userRoute");
 
 // middlewares
 const notFoundMiddleware = require('./middlewares/notFoundHandler');
 const errorHandlerMiddleware = require('./middlewares/errorHandler');
+const verifyToken = require('./middlewares/verifyToken');
 const corsOptions = {
     origin: "http://localhost:3000" // frontend URI (ReactJS)
 }
@@ -32,7 +35,16 @@ app.get("/", (req, res) => {
     res.status(201).json({message: "Connected to Backend!"});
 });
 
-app.use('/user', userRouter);
+// functions without token
+app.use('/auth', userRouter);
+
+// functions with token
+app.use(verifyToken);
+app.use('/message', messageRouter);
+app.use('/user', userRoute);
+
+
+// error handling
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
