@@ -49,7 +49,6 @@ const SessionPage = () => {
       console.log("server error, dev mode");
       setSessions(dummySessions);
     }
-    
   }
 
   useEffect(() => {
