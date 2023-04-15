@@ -20,6 +20,7 @@ const dummyData = [
 const ChatPage = () => {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([ ]);
+    const [opposite, setOpposite] = useState({first_name: "Jackie", last_name: "Brown"})
     const [inputValue, setInputValue] = useState('');
     const { id } = useParams();
     const token = useSelector((state) => state.token);
@@ -33,8 +34,9 @@ const ChatPage = () => {
                 "sessionId": id,
               }
             });
-            const messages = await response.json();
-            setMessages(messages);
+            const data = await response.json();
+            setMessages(data.messages);
+            setOpposite(data.otherUser)
           } catch (error) {
             console.log("server error, dev mode");
             setMessages(dummyData);
@@ -101,7 +103,9 @@ const ChatPage = () => {
             <div style={{ display: 'flex', alignItems: 'center'}}>
                 <Button type="text" icon={<LeftOutlined />} onClick={onBack} />
                 <div style={{ marginLeft: '10px' }}>
-                    <Typography.Title level={4}>Jack Jackson</Typography.Title>
+                    <Typography.Title level={4}>
+                        {`${opposite.first_name} ${opposite.last_name}`}
+                    </Typography.Title>
                     {/* <span>
                         <TagOutlined /> Sleeping issue
                     </span> */}
