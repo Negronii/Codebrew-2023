@@ -17,7 +17,7 @@ const dummyData = [
   // More message data...
 ];
 
-const ChatPage = (sessionId) => {
+const ChatPage = () => {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([ ]);
     const [inputValue, setInputValue] = useState('');
@@ -100,13 +100,12 @@ const ChatPage = (sessionId) => {
             title={
             <div style={{ display: 'flex', alignItems: 'center'}}>
                 <Button type="text" icon={<LeftOutlined />} onClick={onBack} />
-                <Avatar icon={<UserOutlined />} />
-                    <div style={{ marginLeft: '10px' }}>
-                        <Typography.Title level={4}>Jack Jackson</Typography.Title>
-                        {/* <span>
-                            <TagOutlined /> Sleeping issue
-                        </span> */}
-                    </div>
+                <div style={{ marginLeft: '10px' }}>
+                    <Typography.Title level={4}>Jack Jackson</Typography.Title>
+                    {/* <span>
+                        <TagOutlined /> Sleeping issue
+                    </span> */}
+                </div>
             </div>
             }
             style={{ flex: 'none' }}
