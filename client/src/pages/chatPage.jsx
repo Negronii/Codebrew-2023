@@ -1,27 +1,81 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, List, Avatar, Typography, Input, Button, Row, Col } from 'antd';
 import { UserOutlined, SendOutlined, TagOutlined, LeftOutlined } from '@ant-design/icons';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const messageData = [
+
+const dummyData = [
   {
-    sender: 'other',
-    content: 'Hello, how are you?',
+    isMyMessage: false,
+    messageContent: 'Hello, how are you?',
   },
   {
-    sender: 'user',
-    content: 'I\'m doing well, thanks for asking!',
+    isMyMessage: true,
+    messageContent: 'I\'m doing well, thanks for asking!',
   },
   // More message data...
 ];
 
 const ChatPage = () => {
     const navigate = useNavigate();
+    const [messages, setMessages] = useState([ ]);
+    const [opposite, setOpposite] = useState({first_name: "Jackie", last_name: "Brown"})
     const [inputValue, setInputValue] = useState('');
+    const { id } = useParams();
+    const token = useSelector((state) => state.token);
+
+    const getMessages = async () => {
+        try {
+            const response = await fetch(`http://localhot:8000/message`, {
+              method: "POST",
+              headers: { "authorization": `Bearer ${token}`},
+              body: {
+                "sessionId": id,
+              }
+            });
+            const data = await response.json();
+            setMessages(data.messages);
+            setOpposite(data.otherUser)
+          } catch (error) {
+            console.log("server error, dev mode");
+            setMessages(dummyData);
+          }
+    }
+
+    useEffect(() => {
+        getMessages();
+        
+
+        // Set up an interval to fetch data every 5 seconds
+        const intervalId = setInterval(getMessages, 5000);
+
+        // Clean up the interval when the component unmounts
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, []);
   
 
-    const handleSendClick = () => {
-        console.log('Message sent:', inputValue);
+    const handleSendClick = async() => {
+        console.log('Sending message', inputValue);
+        try {
+            const response = await fetch(`http://localhot:8000/send`, {
+              method: "POST",
+              headers: { "authorization": `Bearer ${token}`},
+              body: {
+                "sessionId": id,
+                "content": inputValue
+              }
+            });
+            getMessages()
+          } catch (error) {
+            console.log("server error, dev mode");
+            setMessages([...dummyData, {
+                isMyMessage: true,
+                messageContent: inputValue,
+              }]);
+          }
         setInputValue('');
         // Add your logic to send the message
     };
@@ -48,45 +102,46 @@ const ChatPage = () => {
             title={
             <div style={{ display: 'flex', alignItems: 'center'}}>
                 <Button type="text" icon={<LeftOutlined />} onClick={onBack} />
-                <Avatar icon={<UserOutlined />} />
-                    <div style={{ marginLeft: '10px' }}>
-                        <Typography.Title level={4}>Jack Jackson</Typography.Title>
-                        {/* <span>
-                            <TagOutlined /> Sleeping issue
-                        </span> */}
-                    </div>
+                <div style={{ marginLeft: '10px' }}>
+                    <Typography.Title level={4}>
+                        {`${opposite.first_name} ${opposite.last_name}`}
+                    </Typography.Title>
+                    {/* <span>
+                        <TagOutlined /> Sleeping issue
+                    </span> */}
+                </div>
             </div>
             }
             style={{ flex: 'none' }}
         >
             <List
             itemLayout="horizontal"
-            dataSource={messageData}
+            dataSource={messages}
             style={{ flexGrow: 1, overflowY: 'auto' }}
             split={false}
-            renderItem={(item) => (
+            renderItem={(message) => (
                 <List.Item>
                 <Row
                     style={{
                     width: '100%',
                     justifyContent:
-                        item.sender === 'user' ? 'flex-end' : 'flex-start',
+                        message.isMyMessage ? 'flex-end' : 'flex-start',
                     }}
                 >
                     <Col>
                     <div
                         style={{
                         background:
-                            item.sender === 'user'
+                            message.isMyMessage
                             ? '#1890ff'
                             : 'rgba(0, 0, 0, 0.05)',
-                        color: item.sender === 'user' ? 'white' : 'black',
+                        color: message.isMyMessage ? 'white' : 'black',
                         borderRadius: '15px',
                         padding: '8px 12px',
                         margin: '4px',
                         }}
                     >
-                        {item.content}
+                        {message.messageContent}
                     </div>
                     </Col>
                 </Row>

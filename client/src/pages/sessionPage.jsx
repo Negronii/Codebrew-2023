@@ -6,8 +6,20 @@ import { useEffect, useState } from 'react';
 import { useSelector } from "react-redux";
 
 const dummySessions = [
-  { id: 1, firstName: 'John', lastName: 'wick', avatarUrl: 'https://via.placeholder.com/50', lastMsg: "Hope you well" },
-  { id: 2, firstName: 'Jane', lastName: 'Capin', avatarUrl: 'https://via.placeholder.com/50', lastMsg: "Thank you" },
+  { 
+    firstName: 'John',
+    lastName: 'wick',
+    avatar: 'https://via.placeholder.com/50',
+    sessionId: 1,
+    lastMessageContent: "Hope you well" ,
+  },
+  { 
+    firstName: 'Jane',
+    lastName: 'Capin',
+    avatar: 'https://via.placeholder.com/50',
+    sessionId: 2,
+    lastMessageContent: "Thank you" ,
+  },
 ];
 
 const SessionPage = () => {
@@ -27,9 +39,9 @@ const SessionPage = () => {
 
   const getSessions = async () => {
     try {
-      const response = await fetch(`http://localhot:8000/sessions/${user._id}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`http://localhot:8000/mySessions`, {
+        method: "POST",
+        headers: { "authorization": `Bearer ${token}`},
       });
       const sessions = await response.json();
       setSessions(sessions);
@@ -37,7 +49,6 @@ const SessionPage = () => {
       console.log("server error, dev mode");
       setSessions(dummySessions);
     }
-    
   }
 
   useEffect(() => {
@@ -79,13 +90,13 @@ const SessionPage = () => {
         dataSource={sessions}
         renderItem={(session) => (
           <List.Item
-            onClick={() => navigate("/chat")}
+            onClick={() => navigate(`/chat/${session.sessionId}`)}
             style={{ cursor: 'pointer' }}
           >
             <List.Item.Meta
-              avatar={<Avatar src={session.friendAvatar} icon={<UserOutlined />} />}
+              avatar={<Avatar src={session.avatar} icon={<UserOutlined />} />}
               title={<Typography.Text strong>{`${session.firstName} ${session.lastName}`}</Typography.Text>}
-              description={session.lastMsg}
+              description={session.lastMessageContent}
             />
             <MessageOutlined style={{ fontSize: '20px', marginLeft: 'auto' }} />
           </List.Item>

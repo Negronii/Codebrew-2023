@@ -2,25 +2,68 @@ import React from 'react';
 import { Card, List, Avatar, Typography, Button } from 'antd';
 import { UserOutlined, CloseOutlined, TagOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useSelector } from "react-redux";
 
-const volunteerData = [
+const DummyVolunteer = [
   {
-    volunteerAvatar: 'https://example.com/avatar1.png',
-    volunteerName: 'John Doe',
-    tags: ['Tag1', 'Tag2'],
+    _id:"6439fea28029df373¢44bcbd", 
+    first_name: "John",
+    last_name: "Doe",
+    avatar: null,
+    overlapped_fields_number: 0,
+    distance: "Not available"
   },
   {
-    volunteerAvatar: 'https://example.com/avatar2.png',
-    volunteerName: 'Jane Smith',
-    tags: ['Tag3', 'Tag4'],
+    _id:"6439fea28029df373¢44bcbd", 
+    first_name: "Jane",
+    last_name: "Smith",
+    avatar: null,
+    overlapped_fields_number: 0,
+    distance: "Not available"
   },
   // More volunteer data...
 ];
 
 const VolunteerPage = () => {
     const navigate = useNavigate();
+    const [ volunteers, setVolunteers ] = useState([]);
+    const token = useSelector((state) => state.token);
     const onClose = () => {
         navigate("/session");
+    }
+
+    const getVolunteers = async () => {
+        try {
+          const response = await fetch(`http://localhot:8000/mySessions`, {
+            method: "POST",
+            headers: { "authorization": `Bearer ${token}`},
+          });
+          const data = await response.json();
+          setVolunteers(data);
+        } catch (error) {
+          console.log("server error, dev mode");
+          setVolunteers(DummyVolunteer);
+        }
+      }
+    
+      useEffect(() => {
+        getVolunteers();
+      }, []);
+
+    async function createSession(targetUserId) {
+        try {
+            const response = await fetch(`http://localhot:8000/request`, {
+              method: "POST",
+              headers: { "authorization": `Bearer ${token}`},
+              body: { "targetUserId": targetUserId }
+            });
+            const data = await response.json();
+            navigate(`/chat/${data.session}`)
+          } catch (error) {
+            console.log("server error, dev mode");
+            navigate(`/chat/12`)
+          }
     }
 
     return (
@@ -48,26 +91,28 @@ const VolunteerPage = () => {
             >
             <List
                 itemLayout="horizontal"
-                dataSource={volunteerData}
-                renderItem={(item) => (
+                dataSource={volunteers}
+                renderItem={(volunteer) => (
                 <List.Item
-                    onClick={() => navigate("/chat")}
+                    onClick={() => createSession(volunteer._id)}
                     style={{ cursor: 'pointer' }}
                 >
                     <List.Item.Meta
-                    avatar={<Avatar src={item.volunteerAvatar} icon={<UserOutlined />} />}
-                    title={
+                    avatar={<Avatar icon={<UserOutlined />} />}
+                     title={
                         <Typography.Text strong>
-                        {item.volunteerName}
+                        {`${volunteer.first_name} ${volunteer.last_name}` }
                         </Typography.Text>
                     }
-                    description={
-                        item.tags.map((tag) => (
-                        <span key={tag}>
-                            <TagOutlined /> {tag}{' '}
-                        </span>
-                        ))
-                    }
+                    description="Match: 97%"
+                    // {
+                    //     // volunteer.tags.map((tag) => (
+                    //     // <span key={tag}>
+                    //     //     <TagOutlined /> {tag}{' '}
+                    //     // </span>
+                    //     // ))
+                        
+                    // }
                     />
                 </List.Item>
                 )}
