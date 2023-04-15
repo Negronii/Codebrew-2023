@@ -1,23 +1,49 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, List, Avatar, Typography, Input, Button, Row, Col } from 'antd';
 import { UserOutlined, SendOutlined, TagOutlined, LeftOutlined } from '@ant-design/icons';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const messageData = [
+
+const dummyData = [
   {
-    sender: 'other',
-    content: 'Hello, how are you?',
+    isMyMessage: false,
+    messageContent: 'Hello, how are you?',
   },
   {
-    sender: 'user',
-    content: 'I\'m doing well, thanks for asking!',
+    isMyMessage: true,
+    messageContent: 'I\'m doing well, thanks for asking!',
   },
   // More message data...
 ];
 
-const ChatPage = () => {
+const ChatPage = (sessionId) => {
     const navigate = useNavigate();
+    const [messages, setMessages] = useState([ ]);
     const [inputValue, setInputValue] = useState('');
+    const { id } = useParams();
+    const token = useSelector((state) => state.token);
+
+    const getMessages = async () => {
+        try {
+            const response = await fetch(`http://localhot:8000/message`, {
+              method: "POST",
+              headers: { "authorization": `Bearer ${token}`},
+              body: {
+                "sessionId": id,
+              }
+            });
+            const messages = await response.json();
+            setMessages(messages);
+          } catch (error) {
+            console.log("server error, dev mode");
+            setMessages(dummyData);
+          }
+    }
+
+    useEffect(() => {
+        getMessages();
+      }, []);
   
 
     const handleSendClick = () => {
@@ -61,32 +87,32 @@ const ChatPage = () => {
         >
             <List
             itemLayout="horizontal"
-            dataSource={messageData}
+            dataSource={messages}
             style={{ flexGrow: 1, overflowY: 'auto' }}
             split={false}
-            renderItem={(item) => (
+            renderItem={(message) => (
                 <List.Item>
                 <Row
                     style={{
                     width: '100%',
                     justifyContent:
-                        item.sender === 'user' ? 'flex-end' : 'flex-start',
+                        message.isMyMessage ? 'flex-end' : 'flex-start',
                     }}
                 >
                     <Col>
                     <div
                         style={{
                         background:
-                            item.sender === 'user'
+                            message.isMyMessage
                             ? '#1890ff'
                             : 'rgba(0, 0, 0, 0.05)',
-                        color: item.sender === 'user' ? 'white' : 'black',
+                        color: message.isMyMessage ? 'white' : 'black',
                         borderRadius: '15px',
                         padding: '8px 12px',
                         margin: '4px',
                         }}
                     >
-                        {item.content}
+                        {message.messageContent}
                     </div>
                     </Col>
                 </Row>
