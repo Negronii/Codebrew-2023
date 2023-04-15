@@ -17,6 +17,14 @@ async function register(req, res) {
         return res.status(400).json({ message: "The email address you have entered is already associated with another account." });
     }
 
+    // Check that the date is valid.
+    if (!moment(req.body.dob, "YYYY-MM-DD").isValid()) {
+        return res.status(400).json({message: "Incorrect DOB format."});
+    }
+
+    // convert dob to date object
+    req.body.dob = new Date(req.body.dob);
+
     // Set optional attributes to null if not provided
     const optionalAttributes = ['avatar', 'language', 'dob', 'latitude', 'longitude'];
     optionalAttributes.forEach(attr => {
@@ -24,6 +32,9 @@ async function register(req, res) {
             req.body[attr] = null;
         }
     });
+
+
+    // Set field to empty array if not provided
     if (!req.body.field) {
         req.body.field = [];
     }
@@ -111,6 +122,13 @@ async function login(req, res) {
     if (!validPassword) {
         return res.status(400).json({ message: "Invalid email or password." });
     }
+    if (req.body.latitude) {
+        user.latitude = req.body.latitude;
+    }
+    if (req.body.longitude) {
+        user.longitude = req.body.longitude;
+    }
+    await user.save();
     // Generate JWT
     const token = jwt.sign({ _id: user._id }, process.env.JWT_PRIVATE_KEY, { expiresIn: '1d' });
     // Return user and token
