@@ -7,17 +7,19 @@ import { useNavigate } from "react-router-dom";
 export default () => {
     const navigate = useNavigate();
     const nav2Login = () => {
-      navigate("/login")
+      //navigate("/")
     }
   
-    const [visible, setVisible] = useState(false);
-    const [firstName, setFirstName] = useState(null);
-    const [secondName, setLastName] = useState(null);
-    const [username, setUserName] = useState(null);
-    const [password, setPassword] = useState(null);
-    const [email, setEmail] = useState(null);
-    const [value, setValue] = useState('');
-    const onFinish =()=>{};
+    // const [visible, setVisible] = useState(false);
+    // const [firstName, setFirstName] = useState(null);
+    // const [secondName, setLastName] = useState(null);
+    // const [username, setUserName] = useState(null);
+    // const [password, setPassword] = useState(null);
+    // const [email, setEmail] = useState(null);
+    // const [value, setValue] = useState('');
+    const onFinish =(values)=>{
+        console.log('Received values of form: ', values);
+    };
     return (
       <>
         <div style={{backgroundColor: "#d9d9d9"}}>
@@ -87,7 +89,7 @@ export default () => {
             rules={[{ required: true, message: 'Please input your User Type!' }]}
         >
             <Input prefix={<TeamOutlined className="site-form-item-icon" />} placeholder="User Type (client/volunteer)" list='userList' />
-            <datalist id="genderList">
+            <datalist id="userList">
                 <option>Client</option>
                 <option>Volunteer</option>
             </datalist>
