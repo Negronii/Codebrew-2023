@@ -8,12 +8,14 @@ const LoginPage = () => {
     const [form] = Form.useForm();
     const onFinish = async (values) => {
         console.log('Received values of form: ', values);
+
         try {
             const response = await fetch(`http://localhot:8000/login`, {
               method: "POST",
               body: {
                 "email": values.username,
                 "password": values.password,
+
               }
             });
           } catch (error) {
@@ -26,6 +28,7 @@ const LoginPage = () => {
     }
     
     return (
+
         <div style={{backgroundColor: "#d9d9d9"}}>
             <div
                 style={{

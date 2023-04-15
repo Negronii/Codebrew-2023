@@ -87,7 +87,7 @@ export default () => {
             rules={[{ required: true, message: 'Please input your User Type!' }]}
         >
             <Input prefix={<TeamOutlined className="site-form-item-icon" />} placeholder="User Type (client/volunteer)" list='userList' />
-            <datalist id="genderList">
+            <datalist id="userlist">
                 <option>Client</option>
                 <option>Volunteer</option>
             </datalist>

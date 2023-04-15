@@ -103,7 +103,7 @@ export default () => {
 
         <Form.Item
             name="filed"
-            rules={[{ required: true, message: 'Please input your Gender!' }]}
+            rules={[{ required: true, message: 'Please input your Field!' }]}
         >
             <Input prefix={<RadarChartOutlined className="site-form-item-icon" />} placeholder="Filed" list='filedList'/>
             <datalist id="filedList">
@@ -142,7 +142,7 @@ export default () => {
         </Form.Item>
 
         <Form.Item
-            name="password"
+            name="password_check"
             rules={[{ required: true, message: 'Please input same Password!' }]}
         >
             <Input
