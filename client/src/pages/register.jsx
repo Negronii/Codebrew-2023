@@ -3,6 +3,7 @@ import { LockOutlined, UserOutlined,HighlightOutlined,  MailOutlined,TeamOutline
 import { Button, Checkbox, Form, Input } from 'antd';
 import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom";
+import { DatePicker, Space } from 'antd';
 
 export default () => {
     const navigate = useNavigate();
@@ -24,11 +25,6 @@ export default () => {
             const response = await fetch(`http://localhot:8000/register`, {
               method: "POST",
               body: {
-
-                "email": values.username,
-                "password": values.password,
-                "latitude": navigator.geolocation.getCurrentPosition(showPosition).coords.latitude,
-                "longitude":navigator.geolocation.getCurrentPosition(showPosition).coords.longitude,
                 "first_name": values.first_name,
                 "last_name": values.last_name,
                 "email": values.email,
@@ -36,8 +32,8 @@ export default () => {
                 "gender": values.gender,
                 "type": values.userType,
                 "language":values.language,
-                "latitude": navigator.geolocation.getCurrentPosition(showPosition).coords.latitude,
-                "longitude":navigator.geolocation.getCurrentPosition(showPosition).coords.longitude,
+                "latitude": navigator.geolocation.getCurrentPosition((p)=>{return p.coords.latitude}),
+                "longitude":navigator.geolocation.getCurrentPosition((p)=>{return p.coords.longitude}),
                 "dob": values.dob,
                 "field": ["mental health", "physical health", "social health", "spiritual health"]
               }
@@ -107,7 +103,8 @@ export default () => {
             name="dob"
             rules={[{ required: true, message: 'Please input your Date of Brith int form (dd/mm/yyyy)!' }]}
         >
-             <DatePicker format="YYYY-MM-DD" onChange={onChange} onOk={onOk} />
+             {/* <DatePicker format="YYYY-MM-DD"  /> */}
+             <Input name="lastName" prefix={<CalendarOutlined className="site-form-item-icon" />} placeholder="Date of Brith (dd/mm/yyyy)" />
         </Form.Item> 
         
         <Form.Item
