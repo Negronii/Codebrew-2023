@@ -2,35 +2,48 @@ import { List, Button, Tooltip, Card, Typography } from 'antd';
 import { UserOutlined, PlusOutlined, MessageOutlined } from '@ant-design/icons';
 import { Avatar } from 'antd';
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useSelector } from "react-redux";
 
-const sessions = [
+const dummySessions = [
   { id: 1, firstName: 'John', lastName: 'wick', avatarUrl: 'https://via.placeholder.com/50', lastMsg: "Hope you well" },
   { id: 2, firstName: 'Jane', lastName: 'Capin', avatarUrl: 'https://via.placeholder.com/50', lastMsg: "Thank you" },
 ];
 
-const userName="jack"
-const userStatus="Online"
-const data = [
-  {
-    friendAvatar: 'https://example.com/avatar1.png',
-    friendName: 'John Doe',
-    lastMessage: 'Hey, how are you?',
-  },
-  {
-    friendAvatar: 'https://example.com/avatar2.png',
-    friendName: 'Jane Smith',
-    lastMessage: 'Let\'s catch up soon!',
-  },
-  // More conversation data...
-];
-
 const SessionPage = () => {
   const navigate = useNavigate();
+  // const { user} = useSelector((state) => state.user);
+  const user = {
+    _id: "id",
+    firstName: "Jackie",
+    lastName: "Brown"
+  }
+  const token = useSelector((state) => state.token);
+  const [ sessions, setSessions ] = useState([]);
+
   const navToVolunteer = () => {
-    navigate("/volunteer")
+    navigate("/volunteer");
   }
 
+  const getSessions = async () => {
+    try {
+      const response = await fetch(`http://localhot:8000/sessions/${user._id}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const sessions = await response.json();
+      setSessions(sessions);
+    } catch (error) {
+      console.log("server error, dev mode");
+      setSessions(dummySessions);
+    }
+    
+  }
 
+  useEffect(() => {
+    getSessions();
+  }, []);
+  
   return (
     <div style={{backgroundColor: "#d9d9d9"}}>
       <div
@@ -51,8 +64,8 @@ const SessionPage = () => {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Avatar icon={<UserOutlined />} />
                 <div style={{ marginLeft: '10px' }}>
-                  <Typography.Title level={4}>{userName}</Typography.Title>
-                  <Typography.Text type="secondary">{userStatus}</Typography.Text>
+                  <Typography.Title level={4}>{`${user.firstName} ${user.lastName}`}</Typography.Title>
+                  <Typography.Text type="secondary">Online</Typography.Text>
                 </div>
               </div>
               <Tooltip title="Find volunteer">
@@ -63,7 +76,7 @@ const SessionPage = () => {
         >
       <List
         itemLayout="horizontal"
-        dataSource={data}
+        dataSource={sessions}
         renderItem={(session) => (
           <List.Item
             onClick={() => navigate("/chat")}
@@ -71,8 +84,8 @@ const SessionPage = () => {
           >
             <List.Item.Meta
               avatar={<Avatar src={session.friendAvatar} icon={<UserOutlined />} />}
-              title={<Typography.Text strong>{session.friendName}</Typography.Text>}
-              description={session.lastMessage}
+              title={<Typography.Text strong>{`${session.firstName} ${session.lastName}`}</Typography.Text>}
+              description={session.lastMsg}
             />
             <MessageOutlined style={{ fontSize: '20px', marginLeft: 'auto' }} />
           </List.Item>
