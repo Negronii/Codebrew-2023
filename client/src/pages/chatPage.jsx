@@ -46,8 +46,26 @@ const ChatPage = (sessionId) => {
       }, []);
   
 
-    const handleSendClick = () => {
-        console.log('Message sent:', inputValue);
+    const handleSendClick = async() => {
+        console.log('Sending message', inputValue);
+        try {
+            const response = await fetch(`http://localhot:8000/send`, {
+              method: "POST",
+              headers: { "authorization": `Bearer ${token}`},
+              body: {
+                "sessionId": id,
+                "content": inputValue
+              }
+            });
+            const messages = await response.json();
+            setMessages(messages);
+          } catch (error) {
+            console.log("server error, dev mode");
+            setMessages([...dummyData, {
+                isMyMessage: true,
+                messageContent: inputValue,
+              }]);
+          }
         setInputValue('');
         // Add your logic to send the message
     };
