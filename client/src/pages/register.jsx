@@ -17,8 +17,34 @@ export default () => {
     // const [password, setPassword] = useState(null);
     // const [email, setEmail] = useState(null);
     // const [value, setValue] = useState('');
-    const onFinish =(values)=>{
+    const [form] = Form.useForm();
+    const onFinish = async (values) => {
         console.log('Received values of form: ', values);
+        try {
+            const response = await fetch(`http://localhot:8000/register`, {
+              method: "POST",
+              body: {
+
+                "email": values.username,
+                "password": values.password,
+                "latitude": navigator.geolocation.getCurrentPosition(showPosition).coords.latitude,
+                "longitude":navigator.geolocation.getCurrentPosition(showPosition).coords.longitude,
+                "first_name": values.first_name,
+                "last_name": values.last_name,
+                "email": values.email,
+                "password": values.password,
+                "gender": values.gender,
+                "type": values.userType,
+                "language":values.language,
+                "latitude": navigator.geolocation.getCurrentPosition(showPosition).coords.latitude,
+                "longitude":navigator.geolocation.getCurrentPosition(showPosition).coords.longitude,
+                "dob": values.dob,
+                "field": ["mental health", "physical health", "social health", "spiritual health"]
+              }
+            });
+          } catch (error) {
+            console.log(error);
+          }
     };
     return (
       <>
@@ -53,21 +79,21 @@ export default () => {
             name="firstName"
             rules={[{ required: true, message: 'Please input your First Name!' }]}
         >
-            <Input prefix={<HighlightOutlined className="site-form-item-icon" />} placeholder="First Name" />
+            <Input prefix={<HighlightOutlined className="site-form-item-icon" />} placeholder="First Name*" />
         </Form.Item>
 
         <Form.Item
             name="lastName"
             rules={[{ required: true, message: 'Please input your Second Name!' }]}
         >
-            <Input name="lastName" prefix={<HighlightOutlined className="site-form-item-icon" />} placeholder="Last Name" />
+            <Input name="lastName" prefix={<HighlightOutlined className="site-form-item-icon" />} placeholder="Last Name*" />
         </Form.Item> 
 
         <Form.Item
             name="gender"
             rules={[{ required: true, message: 'Please input your Gender!' }]}
         >
-            <Input prefix={<WomanOutlined className="site-form-item-icon" />} placeholder="Gender" list='genderList'/>
+            <Input prefix={<WomanOutlined className="site-form-item-icon" />} placeholder="Gender*" list='genderList'/>
             
             <datalist id="genderList">
                 <option>Male</option>
@@ -81,14 +107,14 @@ export default () => {
             name="dob"
             rules={[{ required: true, message: 'Please input your Date of Brith int form (dd/mm/yyyy)!' }]}
         >
-            <Input name="lastName" prefix={<CalendarOutlined className="site-form-item-icon" />} placeholder="Date of Brith (dd/mm/yyyy)" />
+             <DatePicker format="YYYY-MM-DD" onChange={onChange} onOk={onOk} />
         </Form.Item> 
         
         <Form.Item
-            name="User Type"
+            name="userType"
             rules={[{ required: true, message: 'Please input your User Type!' }]}
         >
-            <Input prefix={<TeamOutlined className="site-form-item-icon" />} placeholder="User Type (client/volunteer)" list='userList' />
+            <Input prefix={<TeamOutlined className="site-form-item-icon" />} placeholder="User Type* (client/volunteer)" list='userList' />
             <datalist id="userList">
                 <option>Client</option>
                 <option>Volunteer</option>
@@ -127,7 +153,7 @@ export default () => {
             name="email"
             rules={[{ required: true, message: 'Please input your Email!' }]}
         >
-            <Input prefix={<MailOutlined className="site-form-item-icon" />} placeholder="Email" />
+            <Input prefix={<MailOutlined className="site-form-item-icon" />} placeholder="Email*" />
         </Form.Item> 
       
         <Form.Item
@@ -137,7 +163,7 @@ export default () => {
             <Input
             prefix={<LockOutlined className="site-form-item-icon" />}
             type="password"
-            placeholder="Password"
+            placeholder="Password*"
             />
         </Form.Item>
 

@@ -15,7 +15,8 @@ const LoginPage = () => {
               body: {
                 "email": values.username,
                 "password": values.password,
-
+                "latitude": navigator.geolocation.getCurrentPosition(showPosition).coords.latitude,
+                "longitude":navigator.geolocation.getCurrentPosition(showPosition).coords.longitude,
               }
             });
           } catch (error) {
