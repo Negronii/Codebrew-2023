@@ -43,7 +43,16 @@ const ChatPage = (sessionId) => {
 
     useEffect(() => {
         getMessages();
-      }, []);
+        
+
+        // Set up an interval to fetch data every 5 seconds
+        const intervalId = setInterval(getMessages, 5000);
+
+        // Clean up the interval when the component unmounts
+        return () => {
+            clearInterval(intervalId);
+        };
+    }, []);
   
 
     const handleSendClick = async() => {
@@ -57,8 +66,7 @@ const ChatPage = (sessionId) => {
                 "content": inputValue
               }
             });
-            const messages = await response.json();
-            setMessages(messages);
+            getMessages()
           } catch (error) {
             console.log("server error, dev mode");
             setMessages([...dummyData, {
