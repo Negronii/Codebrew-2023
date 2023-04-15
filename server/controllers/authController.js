@@ -18,12 +18,12 @@ async function register(req, res) {
     }
 
     // Check that the date is valid.
-    if (!moment(req.body.dob, "YYYY-MM-DD").isValid()) {
-        return res.status(400).json({message: "Incorrect DOB format."});
-    }
+    // if (!moment(req.body.dob, "YYYY-MM-DD").isValid()) {
+    //     return res.status(400).json({message: "Incorrect DOB format."});
+    // }
 
     // convert dob to date object
-    req.body.dob = new Date(req.body.dob);
+    // req.body.dob = new Date(req.body.dob);
 
     // Set optional attributes to null if not provided
     const optionalAttributes = ['avatar', 'language', 'dob', 'latitude', 'longitude'];

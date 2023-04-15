@@ -19,15 +19,15 @@ const dummyData = [
 
 const ChatPage = () => {
     const navigate = useNavigate();
-    const [messages, setMessages] = useState([ ]);
-    const [opposite, setOpposite] = useState({first_name: "Jackie", last_name: "Brown"})
+    const [messages, setMessages] = useState([]);
+    const [opposite, setOpposite] = useState({})
     const [inputValue, setInputValue] = useState('');
     const { id } = useParams();
     const token = useSelector((state) => state.token);
 
     const getMessages = async () => {
         try {
-            const response = await fetch(`http://localhot:8000/message`, {
+            const response = await fetch(`http://localhost:8000/message/byId`, {
               method: "POST",
               headers: { "authorization": `Bearer ${token}`},
               body: {
@@ -37,8 +37,9 @@ const ChatPage = () => {
             const data = await response.json();
             setMessages(data.messages);
             setOpposite(data.otherUser)
+            
           } catch (error) {
-            console.log("server error, dev mode");
+            console.log(error);
             setMessages(dummyData);
           }
     }
@@ -60,7 +61,7 @@ const ChatPage = () => {
     const handleSendClick = async() => {
         console.log('Sending message', inputValue);
         try {
-            const response = await fetch(`http://localhot:8000/send`, {
+            const response = await fetch(`http://localhost:8000/message/send`, {
               method: "POST",
               headers: { "authorization": `Bearer ${token}`},
               body: {

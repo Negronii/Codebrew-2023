@@ -25,11 +25,7 @@ const dummySessions = [
 const SessionPage = () => {
   const navigate = useNavigate();
   // const { user} = useSelector((state) => state.user);
-  const user = {
-    _id: "id",
-    firstName: "Jackie",
-    lastName: "Brown"
-  }
+  const [ user, setUser ] = useState([]);
   const token = useSelector((state) => state.token);
   const [ sessions, setSessions ] = useState([]);
 
@@ -37,21 +33,39 @@ const SessionPage = () => {
     navigate("/volunteer");
   }
 
-  const getSessions = async () => {
+  const getUser = async () => {
     try {
-      const response = await fetch(`http://localhot:8000/mySessions`, {
+      console.log(token)
+      const response = await fetch(`http://localhost:8000/user/myInfo`, {
         method: "POST",
         headers: { "authorization": `Bearer ${token}`},
       });
-      const sessions = await response.json();
-      setSessions(sessions);
+      const data = await response.json();
+      console.log(data.user)
+      setUser(data.user);
     } catch (error) {
       console.log("server error, dev mode");
+      // setSessions(dummySessions);
+    }
+  }
+
+  const getSessions = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/message/mySessions`, {
+        method: "POST",
+        headers: { "authorization": `Bearer ${token}`},
+      });
+      const data = await response.json();
+      console.log(data)
+      setSessions(data.sessions);
+    } catch (error) {
+      console.log(error)
       setSessions(dummySessions);
     }
   }
 
   useEffect(() => {
+    getUser();
     getSessions();
   }, []);
   
@@ -75,7 +89,7 @@ const SessionPage = () => {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Avatar icon={<UserOutlined />} />
                 <div style={{ marginLeft: '10px' }}>
-                  <Typography.Title level={4}>{`${user.firstName} ${user.lastName}`}</Typography.Title>
+                  <Typography.Title level={4}>{`${user.first_name} ${user.last_name}`}</Typography.Title>
                   <Typography.Text type="secondary">Online</Typography.Text>
                 </div>
               </div>

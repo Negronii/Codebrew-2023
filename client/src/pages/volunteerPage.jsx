@@ -35,7 +35,7 @@ const VolunteerPage = () => {
 
     const getVolunteers = async () => {
         try {
-          const response = await fetch(`http://localhot:8000/mySessions`, {
+          const response = await fetch(`http://localhost:8000/user/getUserByFieldandDistance`, {
             method: "POST",
             headers: { "authorization": `Bearer ${token}`},
           });
@@ -53,7 +53,7 @@ const VolunteerPage = () => {
 
     async function createSession(targetUserId) {
         try {
-            const response = await fetch(`http://localhot:8000/request`, {
+            const response = await fetch(`http://localhost:8000/message/request`, {
               method: "POST",
               headers: { "authorization": `Bearer ${token}`},
               body: { "targetUserId": targetUserId }

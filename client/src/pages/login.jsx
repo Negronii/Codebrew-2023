@@ -3,22 +3,31 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Form, Input } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { useState } from 'react';
+import { useDispatch } from "react-redux";
+import { setLogin } from "state";
 
 const LoginPage = () => {  
     const [form] = Form.useForm();
+    const dispatch = useDispatch();
     const onFinish = async (values) => {
         console.log('Received values of form: ', values);
 
         try {
-            const response = await fetch(`http://localhot:8000/login`, {
+            const response = await fetch(`http://localhost:8000/auth/login`, {
               method: "POST",
-              body: {
+              body: JSON.stringify({
                 "email": values.username,
                 "password": values.password,
-                "latitude": navigator.geolocation.getCurrentPosition((p)=>{return p.coords.latitude}),
-                "longitude":navigator.geolocation.getCurrentPosition((p)=>{return p.coords.longitude}),
-              }
+              })
             });
+            const data = await response.json();
+            dispatch(
+                setLogin({
+                    token: data.token,
+                })
+            );
+            navigate("/session");
+
           } catch (error) {
             console.log(error);
           }
