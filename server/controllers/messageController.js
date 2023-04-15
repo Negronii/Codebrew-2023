@@ -42,7 +42,6 @@ async function getUserSessionsInfo(req, res) {
     });
 }
 
-
 // get the session's messages
 async function getSession(req, res) {
     const session = await Session.findById(req.body.sessionId)
@@ -52,6 +51,7 @@ async function getSession(req, res) {
             options: { sort: { time: 1 } },
             populate: { path: 'sender', model: 'User' },
         })
+        .populate('user1 user2', 'first_name last_name avatar')
         .exec();
 
     const messagesArray = session.messages.map(message => {
@@ -61,11 +61,22 @@ async function getSession(req, res) {
         };
     });
 
+    // Find the other user in the session
+    const otherUser = session.user1._id.toString() === req.user._id.toString() ? session.user2 : session.user1;
+
+    console.log(session)
+
     res.status(200).json({
         message: 'success',
         messages: messagesArray,
+        otherUser: {
+            first_name: otherUser.first_name,
+            last_name: otherUser.last_name,
+            avatar: otherUser.avatar,
+        },
     });
 }
+
 
 
 // send message to a session
@@ -92,7 +103,7 @@ async function sendMessage(req, res) {
 
 // start a new conversation
 async function startConversation(req, res) {
-    const { targetUserId, content } = req.body;
+    const { targetUserId } = req.body;
 
     // Create a new session
     const newSession = new Session({
@@ -102,22 +113,7 @@ async function startConversation(req, res) {
     });
 
     // Save the session
-    await newSession.save();
-
-    // Create a new message
-    const newMessage = new Message({
-        sender: req.user._id,
-        message: content,
-        time: new Date()
-    });
-
-    // Save the message
-    await newMessage.save();
-
-    // Add the message to the new session
-    await Session.findByIdAndUpdate(newSession._id, {
-        $push: { messages: newMessage._id }
-    });
+    await newSession.save();;
 
     // Add the session to both users
     await User.findByIdAndUpdate(req.user._id, {
@@ -127,8 +123,7 @@ async function startConversation(req, res) {
         $push: { sessions: newSession._id }
     });
 
-
-    res.status(200).send({ session: newSession, message: newMessage });
+    res.status(200).send({ session: newSession._id});
 }
 
 // export
